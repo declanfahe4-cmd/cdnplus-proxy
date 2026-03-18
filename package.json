@@ -2,7 +2,7 @@
   "name": "cdnplus-proxy",
   "version": "1.0.0",
   "scripts": {
-    "start": "npx playwright install --with-deps chromium && node index.js"
+    "start": "node index.js"
   },
   "dependencies": {
     "express": "^4.19.2",
