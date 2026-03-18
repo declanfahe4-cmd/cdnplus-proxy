@@ -4,6 +4,12 @@ const { chromium } = require('playwright');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// دالة تعطيك دومًا https حتى على Railway
+function getBase(req) {
+  const protocol = req.headers['x-forwarded-proto'] || 'https';
+  return `${protocol}://${req.get('host')}`;
+}
+
 // ====================== استخراج master ======================
 app.get('/master.m3u8', async (req, res) => {
   const id = req.query.id;
@@ -31,7 +37,6 @@ app.get('/master.m3u8', async (req, res) => {
       timeout: 45000
     });
 
-    // تقليل الانتظار لتفادي crash
     await page.waitForTimeout(7000);
 
     const masterUrl = await page.evaluate(() => {
@@ -53,7 +58,7 @@ app.get('/master.m3u8', async (req, res) => {
 
     let content = await (await fetch(masterUrl)).text();
 
-    const base = `${req.protocol}://${req.get('host')}`;
+    const base = getBase(req);
 
     content = content.replace(
       /(https?:\/\/[^\s\n"']+)/gi,
@@ -78,7 +83,13 @@ app.get('/proxy', async (req, res) => {
   if (!target) return res.status(400).send('Missing url');
 
   try {
-    const response = await fetch(target);
+    const response = await fetch(target, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+        'Referer': 'https://cdnplus.org/',
+        'Origin': 'https://cdnplus.org'
+      }
+    });
 
     const contentType =
       response.headers.get('Content-Type') ||
@@ -91,7 +102,7 @@ app.get('/proxy', async (req, res) => {
     if (target.includes('.m3u8')) {
       body = await response.text();
 
-      const base = `${req.protocol}://${req.get('host')}`;
+      const base = getBase(req);
 
       body = body.replace(
         /(https?:\/\/[^\s\n"']+)/gi,
