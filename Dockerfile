@@ -1,6 +1,5 @@
 FROM node:22-bookworm
 
-# تثبيت dependencies المطلوبة لـ Playwright
 RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     libnss3 \
@@ -30,14 +29,13 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci
+# ✅ تم التعديل هنا
+RUN npm install
 
-# تثبيت chromium الخاص بـ Playwright
 RUN npx playwright install chromium
 
 COPY . .
 
-# Railway يعتمد على PORT
 ENV PORT=3000
 
 EXPOSE 3000
