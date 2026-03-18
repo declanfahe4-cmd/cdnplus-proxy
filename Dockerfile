@@ -29,9 +29,10 @@ WORKDIR /app
 
 COPY package*.json ./
 
-# ✅ تم التعديل هنا
+# 🔥 الحل هنا
 RUN npm install
 
+# تثبيت chromium
 RUN npx playwright install chromium
 
 COPY . .
