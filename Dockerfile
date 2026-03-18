@@ -1,6 +1,6 @@
 FROM node:22-bookworm
 
-# تثبيت كل المكتبات الناقصة اللي بتسبب الخطأ (libglib2.0.so.0 وغيرها)
+# تثبيت dependencies المطلوبة لـ Playwright
 RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     libnss3 \
@@ -22,6 +22,8 @@ RUN apt-get update && apt-get install -y \
     libpango-1.0-0 \
     libcairo2 \
     libasound2 \
+    ca-certificates \
+    fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -30,11 +32,14 @@ COPY package*.json ./
 
 RUN npm ci
 
-# تنزيل المتصفح مرة واحدة
-RUN npx playwright install --with-deps chromium
+# تثبيت chromium الخاص بـ Playwright
+RUN npx playwright install chromium
 
 COPY . .
 
-EXPOSE 8080
+# Railway يعتمد على PORT
+ENV PORT=3000
+
+EXPOSE 3000
 
 CMD ["node", "index.js"]
